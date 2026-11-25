@@ -2,9 +2,9 @@
 
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from urllib.parse import urljoin
 from urllib.request import urlretrieve
 
+BASE_URL = "https://storage.yandexcloud.net/data-fusion-2026/1%20Sentinel/"
 
 # Размеры в байтах помогают отличить готовый файл от оборванной загрузки.
 FILES = {
@@ -21,7 +21,7 @@ FILES = {
 }
 
 
-def download(file_url, folder):
+def download(folder):
     folder.mkdir(parents=True, exist_ok=True)
     with TemporaryDirectory(dir=folder) as temp:
         for name, size in FILES.items():
@@ -31,12 +31,11 @@ def download(file_url, folder):
                 continue
             print(f"Скачиваю {name} ({size / 1_000_000:.1f} МБ)", flush=True)
             partial = Path(temp) / name
-            urlretrieve(urljoin(file_url, name), partial)
+            urlretrieve(BASE_URL + name, partial)
             if partial.stat().st_size != size:
                 raise ValueError(f"Размер {name} отличается от ожидаемого")
             partial.replace(target)
 
 
 if __name__ == "__main__":
-    link = input("Прямая ссылка на любой файл датасета из кабинета ODS: ").strip()
-    download(link, Path(__file__).resolve().parent / "data")
+    download(Path(__file__).resolve().parent / "data")
